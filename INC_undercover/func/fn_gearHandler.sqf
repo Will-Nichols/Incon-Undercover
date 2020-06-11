@@ -65,36 +65,89 @@ switch (_operation) do {
 		_return = unitBackpack _unit;
 	};
 
-	case "addWeapon": {
+	case "addVest": {
 
 		_input params ["_unit"];
 
-		private _wpn = selectRandom _civWpnArray;
+		_unit addVest (selectRandom _civilianVests);
+
+		_return = vest _unit;
+	};
+
+	case "addWeapon": {
+
+		_input params ["_unit",["_weighting",[(100 - _rareWeaponPercentage - _superRareWeaponPercentage),_rareWeaponPercentage,_superRareWeaponPercentage]]];
+
+		if ((count _rareWeaponArray) == 0) then {_rareWeaponArray = _civWpnArray};
+
+		if ((count _superRareWeaponArray) == 0) then {_superRareWeaponArray = _civWpnArray};
+
+		private _wpnList = [_civWpnArray,_rareWeaponArray,_superRareWeaponArray] selectRandomWeighted _weighting;
+		private _wpn = selectRandom _wpnList;
 		private _magsArray = ([_wpn,"getCompatMags"] call INCON_ucr_fnc_gearHandler);
 
 		_return = true;
 
-		if (_unit canAddItemToUniform _wpn) then {
+		if (
+			_hideAllPistols &&
+			(_wpn isKindOf ['Pistol', configFile >> 'CfgWeapons'])
+		) exitWith {
+			(uniformContainer _unit) addItemCargoGlobal [_wpn,1];
+			_unit addMagazine (selectRandom _magsArray);
+			for "_i" from 1 to (ceil random _maxCivMags) do {
+				_unit addMagazine (selectRandom _magsArray);
+			};
+		};
+
+		if (_unit canAddItemToUniform _wpn) exitWith {
 			_unit addItemToUniform _wpn;
 			_unit addMagazine (selectRandom _magsArray);
-			for "_i" from 1 to (ceil random 5) do {
+			for "_i" from 1 to (ceil random _maxCivMags) do {
 				_unit addMagazine (selectRandom _magsArray);
 			};
 
-		} else {
+		};
 
-			if (_unit canAddItemToBackpack _wpn) then {
+		if (_unit canAddItemToBackpack _wpn) exitWith {
 
+			_unit addMagazine (selectRandom _magsArray);
+			_unit addItemToBackpack _wpn;
+			for "_i" from 1 to (ceil random _maxCivMags) do {
 				_unit addMagazine (selectRandom _magsArray);
-				_unit addItemToBackpack _wpn;
-				for "_i" from 1 to (ceil random 8) do {
-					_unit addMagazine (selectRandom _magsArray);
-				};
-
-			} else {
-
-				_return = false;
 			};
+
+		};
+
+		if (_canCarryOpenly) exitWith {
+			_unit addWeapon _wpn;
+			_unit addMagazine (selectRandom _magsArray);
+			for "_i" from 1 to (ceil random _maxCivMags) do {
+				_unit addMagazine (selectRandom _magsArray);
+			};
+		};
+
+		_return = false;
+
+	};
+
+	case "addCarryWeapon": {
+
+		_input params ["_unit",["_weighting",[(100 - _rareWeaponPercentage - _superRareWeaponPercentage),_rareWeaponPercentage,_superRareWeaponPercentage]]];
+
+		if ((count _rareWeaponArray) == 0) then {_rareWeaponArray = _civWpnArray};
+
+		if ((count _superRareWeaponArray) == 0) then {_superRareWeaponArray = _civWpnArray};
+
+		private _wpnList = [_civWpnArray,_rareWeaponArray,_superRareWeaponArray] selectRandomWeighted _weighting;
+		private _wpn = selectRandom _wpnList;
+		private _magsArray = ([_wpn,"getCompatMags"] call INCON_ucr_fnc_gearHandler);
+
+		_return = true;
+
+		_unit addWeapon _wpn;
+		_unit addMagazine (selectRandom _magsArray);
+		for "_i" from 1 to (ceil random _maxCivMags) do {
+			_unit addMagazine (selectRandom _magsArray);
 		};
 	};
 

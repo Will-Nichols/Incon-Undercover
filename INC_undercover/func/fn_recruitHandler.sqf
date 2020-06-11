@@ -18,7 +18,64 @@ Author: Incontinentia
 
 params ["_input",["_operation","recruitAttempt"]];
 
+_return = false;
+
 switch (_operation) do {
+
+    case "changeUnitSide": {
+
+        _input params [["_unit",objNull],["_newSide",west],["_enemyCheckRadius",50]];
+
+        if ({!(side _x in [_newSide,civilian])} count nearestObjects [(getPosWorld _unit),["Man","Car","Tank"],_enemyCheckRadius] > 0) exitWith {
+            _return = false;
+        };
+
+        private _tempGroup = createGroup _newSide;
+
+        [_unit] joinSilent _tempGroup;
+
+        (_tempGroup) spawn {
+        	params ["_tempGroup"];
+        	waitUntil {
+        		sleep 50;
+        		(count units _tempGroup == 0)
+        	};
+        	deleteGroup _tempGroup;
+        };
+
+        _return = true;
+    };
+
+    case "unarmedCheck": {
+        _input params [["_unit",objNull]];
+
+        if !((currentWeapon _unit == "") || {currentWeapon _unit == "Throw"} || {currentWeapon _unit == binocular _unit}) then {
+            _return = false;
+        } else {
+            _return = true;
+        };
+    };
+
+    case "makeCivNormal": {
+        _input params [["_unit",objNull]];
+
+        _unit removeAllEventHandlers "FiredNear";
+        _unit switchmove ""; //Disable ALiVE civilian animations
+        _unit setVariable ["ALIVE_agentBusy",true]; //Disable ALiVE commanding
+        _unit enableAI "TARGET";
+        _unit enableAI "AUTOTARGET";
+        _unit enableAI "AUTOCOMBAT";
+        _unit enableAI "ANIM";
+        _unit enableAI "FSM";
+        _unit enableAI "WEAPONAIM";
+        _unit enableAI "AIMINGERROR";
+        _unit enableAI "SUPPRESSION";
+        _unit enableAI "CHECKVISIBLE";
+        _unit enableAI "CHECKVISIBLE";
+        _unit enableAI "PATH";
+        _unit enableAI "MOVE";
+        if !(isNil "ALIVE_fnc_agentHandler") then {[ALIVE_agentHandler, "unregisterAgent", _unit] call ALIVE_fnc_agentHandler}; //Unregister from ALiVE tasking
+    };
 
     case "recruitCiv": {
 
@@ -30,10 +87,11 @@ switch (_operation) do {
         	"<t color='#33FFEC'>Recruit</t>", {
         		params ["_civ","_undercoverUnit"];
 
+                /*
         		if !((currentWeapon _undercoverUnit == "") || (currentWeapon _undercoverUnit == "Throw")) exitWith {
         		    private _civComment = selectRandom ["Put your weapon away.","Get that thing out of my face","I don't like being threatened.","Put your gun away."];
         		    [[_civ, _civComment] remoteExec ["globalChat",0]];
-        		};
+        		};*/
 
         		[[_civ,_undercoverUnit],"recruitAttempt"] remoteExecCall ["INCON_ucr_fnc_recruitHandler",_civ];
 
@@ -80,13 +138,27 @@ switch (_operation) do {
         		},[],6,true,true,"","((_this getVariable ['isUndercover',false]) && {!(_target getVariable ['INC_alreadyTried',false])} && {alive _target} && {uniform _target != ''} && {(currentWeapon _this != '') && {(currentWeapon _this == primaryWeapon _this) || {currentWeapon _this == handgunWeapon _this}}})",4
         ]] remoteExec ["addAction", 0,true];
 
-        if (30 > (random 100)) then {
+        _unit setVariable ["INC_weaponStore",[["",[""]],["",[""]]]];
+
+        if ((_civPackPercentage > (random 100)) && {backpack _unit == ""}) then {
         	[_unit,"addBackpack"] call INCON_ucr_fnc_gearHandler;
+        };
+
+        if ((_civVestPercentage > (random 100)) && {vest _unit == ""}) then {
+        	[_unit,"addVest"] call INCON_ucr_fnc_gearHandler;
         };
 
         if (_armedCivPercentage > (random 100)) then {
 
-        	[_unit,"addWeapon"] call INCON_ucr_fnc_gearHandler;
+            switch (_carryAllWeaponsOpenly) do {
+                case true: {
+                    [_unit,"addWeapon"] call INCON_ucr_fnc_gearHandler;
+                };
+
+                case false: {
+                    [_unit,"addCarryWeapon"] call INCON_ucr_fnc_gearHandler;
+                };
+            };
         };
 
         if (50 > (random 100)) then {
@@ -102,6 +174,10 @@ switch (_operation) do {
         _undercoverGroup = count units group _undercoverUnit;
 
         _percentage = (linearConversion [0, 40000, (rating _undercoverUnit), 5, 70, true]);
+
+        if ((side _civ)==_undercoverUnitSide) then {
+            _percentage = _percentage + 20;
+        };
 
         if (_percentage > 30) then {
             if ((_percentage > (random 100)) && {_undercoverUnit getVariable ["isUndercover", false]}) then {
@@ -127,7 +203,7 @@ switch (_operation) do {
 
         } else {
 
-            if ((_percentage > (random 100)) && {_undercoverUnit getVariable ["isUndercover", false]} && {!(_undercoverUnit getVariable ["INC_isCompromised", false])}) then {
+            if ((_percentage > (random 100)) && {_undercoverUnit getVariable ["isUndercover", false]}) then {
 
                 if (_undercoverGroup < (2 + (random 5))) then {
 
@@ -231,3 +307,5 @@ switch (_operation) do {
 		_return = _recruitedCiv;
 	};
 };
+
+_return
