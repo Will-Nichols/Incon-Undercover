@@ -262,7 +262,7 @@ if ((_debug) && {isPlayer _unit}) then {hint "You've been compromised."};
 				_activeVeh = (vehicle _unit);
 				if !(
 
-					([_unit, INC_regEnySide,10] call INCON_ucr_fnc_isKnownExact) &&
+					([_unit, INC_regEnySide,10] call INCON_ucr_fnc_isKnownExact) ||
 					{([_unit, INC_asymEnySide,10] call INCON_ucr_fnc_isKnownExact)}
 
 				) then {
