@@ -164,7 +164,7 @@ if (isPlayer _unit) then {
         sleep 0.2;
 
 		//Trespassing check
-		if !(_unit getVariable ["INC_trespassAlert",true]) then {
+		if !(_unit getVariable ["INC_trespassAlert",false]) then {
 	        {
 	            if (_unit inArea _x) exitWith {
 
@@ -195,7 +195,7 @@ if (isPlayer _unit) then {
 		//High security check
 		if ((missionNamespace getVariable ["INC_highSecCheckActive",false]) && {_unit getVariable ["INC_goneIncog",false]} && {_unit getVariable ["INC_trespassAlert",false]}) then {
 
-			if !(_unit getVariable ["INC_highSecAlert",true]) then {
+			if !(_unit getVariable ["INC_highSecAlert",false]) then {
 		        {
 		            if (_unit inArea _x) exitWith {
 

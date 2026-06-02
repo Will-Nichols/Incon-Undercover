@@ -1,7 +1,7 @@
 /* ----------------------------------------------------------------------------
-Function: IsKnownExact
+Function: groupsWithPID
 
-Description: Finds out whether there are any members of a given side who know about the unit's location within a given precision radius. Effectively functions as a way to find out whether the unit has been seen by a given side.
+Description: Finds out whether there are any living groups of a given side who have a positive ID on the unit. Tracks and updates a persistent list of groups who have seen the unit, pruning dead groups as it goes.
 
 Parameters:
 0: The unit to run the check on <OBJECT>
@@ -11,7 +11,7 @@ Parameters:
 
 Returns:
 
-Whether there are groups left alive with a PID of the unit.
+Whether there are groups left alive with a PID of the unit <BOOL>
 ---------------------------------------------------------------------------- */
 
 private ["_groupsWithPID","_aliveGroupsWithPID"];

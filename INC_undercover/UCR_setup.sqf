@@ -81,7 +81,7 @@ _incogVehArray = []; //(Array of classnames) Additional incognito vehicles (vehi
 High security zones are areas that can only be entered with specific uniforms / items, even if the unit is disguised as an enemy.
 For instance, it could be a radar installation or a marker in the vicinity of a high value target that only specially designated units are allowed near.
 All high security zones are automatically considered non-civilian territory, but units dressed as enemies can enter without being instantly considered hostile, but they will attract a LOT more attention.
-In these settings, you can .
+//In these settings, you can define additional markers, vehicles, uniforms and items that control access to high security areas.
 */
 
 _highSecMarkers = []; 					//Names of additional markers for areas that are designated high security zones that require specific uniforms to enter without raising suspicion (any with "INC_highSec" - case sensitive - somewhere in the marker name will automatically be included)
@@ -118,7 +118,7 @@ _hideAllPistols = true;             //(Bool - true or false) Hide all pistols in
 _canCarryOpenly = true;             //If the weapon can't fit in the pack, should civilians carry weapons overtly instead?
 _carryAllWeaponsOpenly = false;     //Carry all weapons openly (overrides the above)
 _rareWeaponPercentage = 20;         //Percentage chance that a civilian will have a rare weapon
-_superRareWeaponPercentage = 5;     //Percentage chance that a civilian will have a rare weapon
+_superRareWeaponPercentage = 5;     //Percentage chance that a civilian will have a super rare weapon
 _maxCivMags = 10;                   //Maximum number of magazines a civilian will carry
 
 //Weapon classnames for armed civilians (array of classnames)
