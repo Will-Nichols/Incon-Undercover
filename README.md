@@ -1,167 +1,197 @@
-# INCONTINENTIA'S UNDERCOVER / CIVILIAN RECRUITMENT
+# INCONTINENTIA'S UNDERCOVER / CIVILIAN RECRUITMENT - INCON UNDERCOVER — Community Update
+### Based on Incontinentia's Undercover / Incognito Simulation Script for Arma 3
 
-This is a complex and performance friendly undercover simulation for players and their AI subordinates. Work as a guerrilla cell, go undercover, recruit comrades, and cause mayhem.
-SP / Coop and Dedi compatible.
+---
 
+## Overview
 
-### Requires:
+Incon Undercover is a comprehensive, performance-friendly undercover and incognito simulation for Arma 3. Work as a guerrilla cell, go undercover as a civilian or enemy soldier, recruit comrades, and cause mayhem — all without a single gamey checkbox in sight.
 
-* CBA
+This community update builds on the original script by Incontinentia, incorporating bug fixes, stability improvements, ALiVE and ACE compatibility work, and an expanded civilian recruitment system developed and validated on active multiplayer servers.
 
+Compatible with Singleplayer, Coop, and Dedicated Server.
 
-### FEATURES
+---
 
-#### General
+## Credits
 
-* Virtually every factor that can affect your cover (within engine limitations and the caveats mentioned below) has been accounted for.
-* Optimised to the max; should not noticably affect performance at all - no noticeable performance impact even during a stress test of 45+ undercover units simultaneously undercoverising several enemy patrols.
-* Operates primarily on each client - server / client interaction is therefore kept to a minimum even when multiple players are undercover at the same time
-* Compatible with RHS, ACE, ALiVE, Zeus, ASR, bCombat, TPWCAS, VCOM... pretty much everything its been tested on with the exception of factions that rely on randomisation (some factions' helmets and bandannas may not be recognised but the overall effect of this will be minimal - if you desperately want all features, use vanilla or RHS versions of these assets)
+**Original script:** Incontinentia
+**Detection system basis:** Grumpy Old Man, Tajin, sarogahtyp
+**Original additional functions:** Spyderblack723
+**Optimisation contributions:** das attorney, davidoss, Bad Benson, Tankbuster, dedmen, fn_Quiksilver, marceldev89, baermitumlaut, Duda123, Jebediah, Jmaster, ScottyZ
+**Original testing:** accuracythruvolume
+**Optimization testing:** Silver Squadron
+**Community update:** Reschke — with thanks to the one and only Incontinentia for the original work and permission to continue development as needed.
 
-#### Comprehensive undercover / incognito simulation -
+---
 
-* Works on players and their AI group members
-* Quick, easy setup: most aspects of the script are automatically implemented based on the settings you choose
-* Can run in the background even when the mission isn't focused around undercover operations - automatically reduces checking overhead when unit isn't undercover so it should be practically unnoticeable
-* No need to turn the script on or off - it just works
-* No checkboxes, compromised notifications or any other "gamey" stuff; just an optional hint when you're obviously hostile and when you aren't - the rest is up to you
-* Responds to whether the units are in vehicles or on foot, dressed as enemies or civilians, whether the unit's face fits or doesn't fit in with the faction they are pretending to be, or whether it is day or night, with each situation requiring players to behave appropriately
-* Suspicious enemies may challenge or watch and follow undercover units if they act weirdly; the more weird stuff you do, the more likely they are to see through your disguise (you can even use this to your advantage to draw enemies attention away from another unit while they do something suspicious - just don't get too cocky or they will open fire on you)
-* Players must "act" their role; doing weird stuff will raise suspicion and could blow your cover - if you point your weapon at an enemy and they see you doing it, they will get suspicious very quickly. Equally, if an enemy sees you crawling around or planting explosives, you're not going to stay undercover for long.
-* Enemies will detect if undercover units are not of the ethnicity of the group they are impersonating; covering your face with a scarf or bandanna will reduce this but not as much as choosing undercover units whose faces fit in with the people they are trying to impersonate
-* All actions have consequences, good or bad. If the MRAP you're driving gets a bit close to a patrol, moving into the back of it and out of sight of the enemy might just save your skin. Equally, putting a balaclava on when you're a civilian will attract a lot of attention - which is especially not good if you're already carrying a military rucksack.
-* Once undercover units become compromised, enemies will remember the vehicles they are spotted in and (if they get a good look) the clothes they are wearing - change your clothing and if no enemies see you doing it, your new disguise may stick. The further you are away from where you were spotted, the more likely your new disguise is to work.
-* Easily switch disguises: take enemy uniforms from nearby crates, vehicles, dead bodies and the ground (and order AI subordinates to do the same)
-* Quickly conceal and un-conceal your (and your subordinates') weapons if you have the inventory space - without faffing with inventories
-* Different configurable detection systems for regular and asymetric enemy forces
-* Configurable high security zones require specific uniforms. Go without and enemies are likely to get suspicious of you very quickly. 
+## Requirements
 
-#### Stealth kills work -
+- **CBA_A3** (required)
+- **ACE3** (optional — ACE interact menu integration included)
+- **ALiVE** (optional — civilian recruitment and persistence integration included)
 
-* If nobody sees you firing a shot, your cover will remain intact
-* BUT, enemies do remember suspicious units - if you kill someone and other enemies of that side already know who you are and that you are nearby, there is a chance your cover will be blown regardless
-* However, your cover will return if you kill everyone who knows about you before they can spread the word
+---
 
-#### Different behaviour for regular and asymmetric forces
+## What's New in This Version
 
-* Define a side as asymmetric and they will not be able to share your identity outside of the local area, but they will be better at spotting imposters
-* Define a side as regular and your cover will stay blown for much longer and for a much wider area once compromised... but they may not have such a good nose for imposters
+### Bug Fixes
+- Fixed a critical side-switching bug caused by engine behaviour where `setCaptive` could silently switch a unit's side to civilian rather than simply setting captive state. A `captiveCheck` system now wraps every captive state change to detect and correct side mismatches before they occur. This was the root cause of the "unresponsive enemies" bug on longer or multi-session missions when running ALiVE and ACE simultaneously.
+- Fixed `fn_initUcrVars` nil check that was incorrectly overwriting `_asymEnySide` instead of `_regEnySide` when `_regEnySide` was undefined, causing unpredictable side assignment on certain faction configurations.
+- Fixed vehicle compromise flag logic that used `&&` (AND) instead of `||` (OR) when checking whether either enemy side had spotted the unit's vehicle. Previously the flag would only set when both sides simultaneously knew about the vehicle — which almost never happens in single-enemy-faction missions.
+- Fixed trespass and high security zone checks that used `true` as the default variable value, causing both checks to be skipped entirely on the first execution pass.
+- Fixed `fn_recruitHandler` `makeCivNormal` operation which called `enableAI "CHECKVISIBLE"` twice in sequence. Second call corrected to `enableAI "COVER"`.
+- Fixed `_carryAllWeaponsOpenly` switch in `fn_recruitHandler` which had the `addWeapon` and `addCarryWeapon` cases reversed, causing civilians to always conceal weapons when the flag was true and always carry openly when false — the opposite of the intended behaviour.
+- Fixed `fn_initUcrVars` which previously used `exitWith` on a unit side mismatch, aborting the entire initialisation script. Now logs a warning and continues, preventing hard init failures when ALiVE or ACE temporarily shuffles unit sides during setup.
+- Corrected copy-paste error in `fn_groupsWithPID` function header which incorrectly described the function as `IsKnownExact`.
 
-#### (Optional) Civilian Recruitment
+### Expanded Civilian Recruitment System
+The civilian gear initialisation system has been significantly expanded with new configurable options (see `UCR_setup.sqf`):
 
-* Undercover units can recruit civilians to join their group
-* The more enemies you kill, and the more chaos you are associated with, the better your reputation will become
-* The better your reputation, the more likely civilians are to join you
-* Kill enemies without getting spotted and there is a chance they will lash out against civilians, with a potential to cause a civilian uprising (optional)
-* Automatically arm ambient civilians with weapons and items which they may use if recruited or during an uprising
-* Try to steal civilians' clothes from them (but be prepared that your reputation will take a hit or you may become compromised)
-* (Requires ALiVE) Turn recruited units into a profiled group to be used by AI commander of the same faction as the undercover unit. Add the following to object init: this addaction ["Profile group","[player,'profileGroup'] remoteExecCall ['INCON_ucr_fnc_ucrMain',2]",[],1,false,true]);
+- Tiered weapon rarity system — civilians can now be assigned common, rare, and super rare weapons from separate configurable arrays with weighted probability
+- Pistols can be automatically hidden in uniform rather than carried visibly, controlled by `_hideAllPistols`
+- Fine-grained control over overt vs concealed weapon carry via `_canCarryOpenly` and `_carryAllWeaponsOpenly`
+- Configurable backpack and vest assignment chance via `_civPackPercentage` and `_civVestPercentage`
+- Configurable maximum magazine count per civilian via `_maxCivMags`
+- Civilians of the same side as the undercover unit now receive a recruitment chance bonus
+- Recruited civilians now have ACE medical, EOD and engineer flags set automatically
 
+### ALiVE Compatibility
+- `makeCivNormal` operation in `fn_recruitHandler` now correctly unregisters recruited civilians from ALiVE agent tasking and disables ALiVE civilian animations before handing control to the undercover system
+- Side mismatch handling changed from hard abort to soft warning to prevent init failures in ALiVE-managed faction environments
 
-### USAGE
+---
 
-1. Add all files from Incon-Undercover folder into your mission folder. If you already have a description.ext or initPlayerLocal.sqf then add the code to your existing files. (Make sure to delete any previous version of my undercover scripts). In description.ext, if the class is already defined (for instance, cfgFunctions), just add the #include line to the given class.
+## Installation
 
-2. Configure your settings in the UCR_setup.sqf file in the INC_undercover folder (pay close attention to these, one wrong setting can lead to some weird behaviour). Do NOT comment out any lines as this will break the script. 
+1. Copy the `INC_undercover` folder into your mission folder.
+2. If you already have a `description.ext`, add the `#include` line to the existing `cfgFunctions` class rather than replacing the file. If you already have an `initPlayerLocal.sqf` or `postInitXEH.sqf`, add the relevant lines to your existing files rather than replacing them.
+3. Configure your settings in `INC_undercover\UCR_setup.sqf`. Read every setting carefully — one wrong value can cause unexpected behaviour.
+4. For each trespass / out-of-bounds area, place a map marker with `INC_tre` somewhere in the marker name (e.g. `INC_tre_airbase` or `myMarker_INC_tre_01`). The script will find them automatically.
+5. For each high security zone, place a map marker with `INC_highSec` somewhere in the marker name.
+6. For each playable undercover unit, add the following to their unit init in the editor:
 
-3. For each out of bounds area, place a marker over the area with "INC_tre" somewhere in the marker name (e.g. "MyMarkerINC_tre" or "INC_tre_sillyMarkerName_15"). The script will handle the rest. But if you want, you can also include other markers by listing them in the relevant array in UCR_setup.sqf.
-
-4. Add in Incon Persistence if you want your band of merry men to persist between ALiVE sessions (this is now a separate script but automatically persists reputation).
-
-5. For each playable undercover unit, put this in their unit init in the editor:
-
-```
+```sqf
 this setVariable ["isSneaky",true,true];
 ```
 
-Non-player units in the undercover unit's group do not need anything; the script will run on them automatically on mission start.
+AI units in the undercover player's group do not need this — the script handles them automatically on mission start.
 
+---
 
-### Caveats / Compatibility:
-* Only one side can have undercover units at a time (so no east undercover and west undercover units undercoverising each other at the same time)
-* Only one side can be defined as asymmetric at a time and only one side can be defined as regular - and both must be hostile to the undercover unit's side. So if having a three-way war, one side must be asym and the other regular.
-* If having a three-way (...war), it is recommended to not have any incognito factions as an engine limitation means that incognito units (i.e. those disguised as the enemy) will be seen as friendly to all - could break the immersion if you're dressed as OPFOR and GreenFOR don't shoot at you when they should.
-* For mission makers - just be aware that the following could affect your mission: enemy units may wander from their original positions to follow undercover units if they become suspicious. Also, when compromised by regular forces, an undercover unit's description will be shared across other enemies in the local area after some time if they don't kill everyone who knows about them
-* Works on all tested mods with the exception of factions that use randomisation scripts such is the Iraqi Syrian Conflict Mod -- these will need a manual list of the possible enemy uniforms and gear (which is possible using the setup.sqf). If you find an incompatibility, tell me!
-* In MP, ensure that respawn timers are set to at least 5 seconds to give the script a chance to recognise when a unit is dead and reset values accordingly.
+## Configuration — UCR_setup.sqf
 
+All settings live in `INC_undercover\UCR_setup.sqf`. Do **not** comment out any lines — this will break the script.
 
-### Credits
+### General Settings
 
-Massive thanks to Spyderblack723 for his help creating some of the functions and correcting my mistakes / oversights on the original release. Also for generally being super helpful over the past year as I've got into modding. Grumpy Old Man, Tajin and sarogahtyp are responsible for creating a performant detection script, which I then adapted and used as a basis for the undercover script, so thank you to those guys too. Also thanks to das attorney, davidoss, Bad Benson, Tankbuster, dedmen, fn_Quiksilver, marceldev89, baermitumlaut and Duda123 for some top optimisation tips. And huge thanks to accuracythruvolume for testing and feedback.
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `_undercoverUnitSide` | Side | `west` | The side that undercover units belong to. Only one side supported. |
+| `_debug` | Bool | `false` | Enables debug hints and log output. |
+| `_fullAIfunctionality` | Bool | `true` | Runs all checks on AI group members. May slightly affect performance with 15+ unit groups. |
+| `_easyMode` | Bool | `true` | Check Disguise action also tells the player whether their disguise is working. |
+| `_racism` | Bool | `true` | Enemies notice if the unit's face doesn't match the faction they are impersonating. |
+| `_racProfFacCiv` | Number | `1` | Multiplier for racial profiling by civilians. Lower to simulate a more multicultural population. |
+| `_racProfFacEny` | Number | `1` | Multiplier for racial profiling by enemies. Lower to simulate more multicultural enemy forces. |
+| `_globalSuspicionModifier` | Number | `1` | Global suspicion scaler. 2 = twice as hard to stay undercover. 0.5 = half as hard. |
 
+### Enemy Sides
 
-### In Detail: How it works
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `_regEnySide` | Side | `east` | Regular enemy side. Shares detected unit identity across the entire map. Use `sideEmpty` if not needed. |
+| `_regBarbaric` | Bool | `false` | Regular side may lash out at civilians after taking casualties if attacker is unknown. |
+| `_regDetectRadius` | Number | `10` | Base detection radius for regular troops in metres. Expands and contracts based on behaviour, weather, and time of day. |
+| `_asymEnySide` | Side | `sideEmpty` | Asymmetric enemy side. Better at spotting imposters but only shares identity locally. Use `sideEmpty` if not needed. |
+| `_asymBarbaric` | Bool | `true` | Asymmetric side may lash out at civilians after taking casualties if attacker is unknown. |
+| `_asymDetectRadius` | Number | `15` | Base detection radius for asymmetric troops in metres. |
 
-For the sake of this explanation, we'll separate behaviours into three categories: suspicious, attention-drawing and weird.
+### Civilian Disguise
 
-* Any suspicious behvaviour will make enemies see the unit as hostile right away. Two minor suspicious behaviours (being both armed and trespassing when not dressed as an enemy) or one major one (firing a weapon) will compromise the unit if they are witnessed. Units will remain suspicious as long as there are enemies who have reasonably fresh target knowledge of the unit, even if not doing anything suspicious anymore.
+| Variable | Type | Description |
+|---|---|---|
+| `_civFactions` | Array | Faction classnames whose gear is automatically considered safe for civilian disguise. |
+| `_civilianVests` | Array | Additional safe vest classnames on top of faction auto-detection. |
+| `_civilianUniforms` | Array | Additional safe uniform classnames. |
+| `_civilianHeadgear` | Array | Additional safe headgear classnames. |
+| `_civilianBackpacks` | Array | Additional safe backpack classnames. |
+| `_civilianVehicleArray` | Array | Additional safe vehicle classnames. |
+| `_HMDallowed` | Bool | Whether HMDs (NVGs etc.) are safe to wear as a civilian. |
+| `_noOffRoad` | Bool | Civilian vehicles driving more than 50m off-road are immediately considered hostile. |
 
-* Weird behaviour will not make enemies see the unit as hostile instantly, but each additional weird behaviour will increase the likelihood of nearby enemies blowing the unit's cover. Weird behaviour in proximity to enemies may cause some to take interest and follow the unit or become outright hostile straight away if you are acting strangely enough. If the unit isn't able to stop acting strangely or the suspicious enemies are not dealt with quickly (or you don't manage to escape), they may compromise the unit and any teammates who are also acting strangely nearby.
+### Enemy Disguise
 
-* Attention-drawing behaviour isn't necessarily weird, but it does make enemies notice you from further away. While dressed as the enemy, wearing the wrong helmet for your disguise is harder to detect from a distance than wearing the wrong vest, but both are weird. Wearing a vest will therefore add to your attention-drawing behaviour. Running, for instance, isn't so weird but will draw attention from enemies who are further away. Most weird behaviours will be attention-drawing too. The more attention-drawing behaviours you do, the further away units will start taking an interest in you, and therefore, the more likely they are to compromise you if you are also doing anything weird (like wearing NVGs while dressed as a civilian). The default detection radius can be configured in the UCR_setup file but this radius will expand and contract according to the undercover unit's attention-drawing behaviours, incognito status and vehicle, as well as environmental factors like moon intensity, overcast, rain and fog. It is recommended to not change the detection radius much from the default.
+| Variable | Type | Description |
+|---|---|---|
+| `_incogFactions` | Array | Enemy faction classnames whose gear and vehicles allow impersonation. |
+| `_trespassMarkers` | Array | Additional trespass marker names (markers with `INC_tre` in the name are auto-detected). |
+| `_incognitoVests` | Array | Additional safe vests for enemy disguise. |
+| `_incognitoHeadgear` | Array | Additional safe headgear for enemy disguise. |
+| `_incognitoBackpacks` | Array | Additional safe backpacks for enemy disguise. |
+| `_incognitoUniforms` | Array | Additional safe uniforms for enemy disguise. |
+| `_incogVehArray` | Array | Additional incognito vehicles beyond faction auto-detection. |
 
-If the unit is compromised, the unit should try to kill all enemies who know about them before they spread the unit's identity across the AO.
-After that, the unit becomes fully compromised and must change his disguise (clothes and either goggles / headgear) or leave the area completely to go undercover again.
-Each time unit gets fully compromised, the effects of any weird behaviour will be amplified as enemies will be looking for them.
+### High Security Zones
 
-Suspicious / weird behaviours will vary according to factors including:
-* Whether the unit is disguised as the enemy or a civilian
-* Whether the unit is in a vehicle or on foot
-* Whether the position in the vehicle is completely open, partially open, or completely closed
-* What time of day and weather it is (dark / moonlit / overcast / fog at night, fog / rain during the day)
-* Whether the unit has been compromised before
+| Variable | Type | Description |
+|---|---|---|
+| `_highSecMarkers` | Array | Additional high security marker names (markers with `INC_highSec` are auto-detected). |
+| `_highSecInstantHostile` | Bool | If true, wrong uniform in high security area = instantly hostile. If false, highly suspicious. |
+| `_highSecVehicles` | Array | Vehicles that can enter high security areas without raising suspicion. |
+| `_highSecurityUniforms` | Array | Uniforms that permit entry into high security areas. |
+| `_highSecItemCheck` | Bool | Check for disallowed items in high security areas. Each non-permitted item adds suspicion. |
+| `_highSecItems` | Array | Items permitted in high security areas without raising suspicion. |
+| `_hsItChkOutside` | Bool | Apply high security item checks even outside high security zones when wearing a high security uniform. |
+| `_hsMustBeUnarmed` | Bool | Carrying any weapon in a high security area is treated as hostile. |
+| `_highSecItemCheckScalar` | Number | Multiplies suspicion caused by each disallowed item in high security areas. |
 
-#### Appropriate behaviour: a guide for new spies
-This is a short primer for the kinds of things to bear in mind while going undercover. It is by no means conclusive. The best advice is to act as normal as you can for the situation.
+### Civilian Recruitment
 
-WHEN IN DISGUISE AS THE ENEMY:
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `_civRecruitEnabled` | Bool | `true` | Enable or disable civilian recruitment entirely. |
+| `_armedCivPercentage` | Number | `70` | Percentage of recruitable civilians who will be armed. |
+| `_civPackPercentage` | Number | `30` | Percentage of civilians who will be given a backpack. |
+| `_civVestPercentage` | Number | `10` | Percentage of civilians who will be given a vest. |
+| `_hideAllPistols` | Bool | `true` | Pistols are placed in the uniform container rather than carried visibly. |
+| `_canCarryOpenly` | Bool | `true` | If a weapon cannot fit in uniform or backpack, carry it openly instead of discarding. |
+| `_carryAllWeaponsOpenly` | Bool | `false` | All armed civilians carry weapons openly regardless of inventory space. Overrides `_canCarryOpenly`. |
+| `_rareWeaponPercentage` | Number | `20` | Chance a civilian receives a weapon from `_rareWeaponArray` instead of `_civWpnArray`. |
+| `_superRareWeaponPercentage` | Number | `5` | Chance a civilian receives a weapon from `_superRareWeaponArray`. |
+| `_maxCivMags` | Number | `10` | Maximum number of magazines a civilian will carry. |
+| `_civWpnArray` | Array | — | Common civilian weapon classnames. |
+| `_rareWeaponArray` | Array | `[]` | Rare weapon classnames. Falls back to `_civWpnArray` if empty. |
+| `_superRareWeaponArray` | Array | `[]` | Super rare weapon classnames. Falls back to `_civWpnArray` if empty. |
+| `_civItemArray` | Array | — | Miscellaneous items civilians may carry. |
+| `_civPackArray` | Array | — | Backpack classnames for civilian backpack assignment. |
 
-When on foot, the following may count as weird behaviour:
-* Wearing a backpack or vest that isn't normally used by the enemy faction
-* Holding a weapon that isn't normally used by the enemy faction
-* Wearing a hat or helmet that isn't normally used by the faction
-* Running / sprinting (when not under fire)
-* Crouching / crawling (when not under fire)
-* Wearing a uniform that the unit was recently compromised in
-* Raising your weapon (when not under fire)
-* Pointing your weapon at an enemy
+---
 
-When in a vehicle, the following may count as weird behaviour:
-* Driving with headlights off at night
-* Wearing a non-disguise uniform or vest (if not in an enclosed vehicle)
-* Wearing inappropriate headgear or goggles
-* Wearing a HMD (like a night vision device)
+## Known Limitations
 
+- Only one side can have undercover units at a time.
+- Only one side can be defined as regular and one as asymmetric — both must be hostile to the undercover side.
+- In three-way conflicts, incognito units (dressed as one enemy faction) will be seen as friendly by the third faction due to an engine limitation.
+- Factions that use randomisation scripts for gear (e.g. some mod factions) may not be fully auto-detected. Use the manual classname arrays in `UCR_setup.sqf` to cover missing items.
+- In multiplayer, set respawn timers to at least 5 seconds to allow the script to correctly detect unit death and reset variables.
 
-WHEN IN DISGUISE AS A CIVILIAN:
+---
 
-When on foot, the following may count as weird behaviour:
-* Wearing a helmet, HMD or balaclava
-* Running / sprinting (when not under fire)
-* Crouching / crawling (when not under fire)
-* Wearing a uniform that the unit has been recently compromised in
-* Smelling of cordite (having shot recently)
-* Holding binoculars / laser designators / rangefinders
+## How It Works
 
-And suspicious:
-* Wearing a non-civilian uniform or vest
-* Wearing a compromised uniform
-* Visibly carrying a weapon (including on your back - but not including holstered pistols)
-* Trespassing onto a restricted area
+Behaviours fall into three categories:
 
-When in a vehicle, the following may count as weird behaviour:
-* Wearing a suspicious vest or uniform
-* Wearing a HMD (night vision goggles)
-* Wearing a compromised uniform
-* Driving fast (the faster you go, the more attention you will draw)
+**Suspicious** — immediately makes enemies see the unit as hostile if witnessed. Two minor suspicious behaviours together (e.g. being armed AND trespassing while dressed as a civilian) or one major one (firing a weapon) will compromise the unit.
 
-And suspicious:
-* Suspicious behaviour:
-* Driving a non-civilian vehicle
-* Driving a vehicle that has been compromised
-* Trespassing onto a restricted area
-* Driving more than 30m offroad (optional)
-* Driving with headlights off at night
+**Weird** — does not immediately blow cover, but each additional weird behaviour increases the chance that nearby enemies will challenge or follow the unit. Accumulate enough weirdness and enemies will blow your cover outright.
 
-This is a short overview; it is good practice to make sure all aspects of your disguise are in keeping with your cover, even if it isn't listed in the behaviours above. If you are dressed like a civilian, act like one. If dressed like the enemy, keep your head down and don't draw attention to yourself.
+**Attention-drawing** — expands the radius at which enemies start paying attention to the unit. Running, wearing the wrong kit, or driving fast all draw attention from further away, making it more likely that any weird behaviour will be noticed.
+
+Once compromised, the unit must eliminate everyone who knows about them before the information spreads, then change disguise out of sight of any remaining enemies to go undercover again. Each time a unit is fully compromised, enemies become more suspicious of them even after a disguise change.
+
+---
+
+## License
+
+GPL-3.0 — see LICENSE file. Original work by Incontinentia.
