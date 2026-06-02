@@ -71,7 +71,7 @@ switch (_operation) do {
         _unit enableAI "AIMINGERROR";
         _unit enableAI "SUPPRESSION";
         _unit enableAI "CHECKVISIBLE";
-        _unit enableAI "CHECKVISIBLE";
+        _unit enableAI "COVER";
         _unit enableAI "PATH";
         _unit enableAI "MOVE";
         if !(isNil "ALIVE_fnc_agentHandler") then {[ALIVE_agentHandler, "unregisterAgent", _unit] call ALIVE_fnc_agentHandler}; //Unregister from ALiVE tasking
@@ -152,11 +152,11 @@ switch (_operation) do {
 
             switch (_carryAllWeaponsOpenly) do {
                 case true: {
-                    [_unit,"addWeapon"] call INCON_ucr_fnc_gearHandler;
+                    [_unit,"addCarryWeapon"] call INCON_ucr_fnc_gearHandler;
                 };
 
                 case false: {
-                    [_unit,"addCarryWeapon"] call INCON_ucr_fnc_gearHandler;
+                    [_unit,"addWeapon"] call INCON_ucr_fnc_gearHandler;
                 };
             };
         };

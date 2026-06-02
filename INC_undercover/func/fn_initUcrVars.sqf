@@ -27,7 +27,7 @@ _this spawn {
 
 	if (isNil "_asymEnySide") then {_asymEnySide = sideEmpty};
 
-	if (isNil "_regEnySide") then {_asymEnySide = sideEmpty};
+	if (isNil "_regEnySide") then {_regEnySide = sideEmpty};
 
 	if (_regEnySide == _asymEnySide) exitWith {
 
